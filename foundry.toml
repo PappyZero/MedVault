@@ -1,0 +1,36 @@
+[profile.default]
+src = "contracts"
+out = "out"
+libs = ["lib"]
+remappings = [
+    '@openzeppelin/contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/',
+    '@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/'
+]
+solc_version = "0.8.26"
+evm_version = "paris"
+optimizer = true
+optimizer_runs = 200
+
+# BlockDAG Awakening testnet configuration
+# Uncomment and use these for deployment
+# [rpc_endpoints]
+# awakening = "https://rpc.awakening.bdagscan.com"
+
+# [etherscan]
+# awakening = { key = "${ETHERSCAN_API_KEY}", chain = 1043, url = "https://api.bdagscan.com/api" }
+
+# Gas configuration
+gas_limit = 9223372036854775807
+gas_price = 3000000000
+
+# Test configuration
+[profile.default.fuzz]
+runs = 256
+
+[profile.default.invariant]
+runs = 256
+depth = 15
+
+# RPC endpoints for EVM testnets (use with --rpc-url $RPC_URL)
+[rpc_endpoints]
+sepolia = "${RPC_URL}"
