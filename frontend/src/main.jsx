@@ -1,9 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider } from 'react-router-dom';
 import { Web3Provider } from './contexts/Web3Context';
-import ErrorBoundary from './components/ErrorBoundary';
-import { router } from './routes';
+import router from './routes';
 import './index.css';
 
 // Error reporting service
@@ -123,38 +122,20 @@ const ErrorFallback = ({ error, resetError }) => {
   );
 };
 
-// Create router with future flags
-const createAppRouter = () => {
-  return createBrowserRouter(router, {
-    future: {
-      v7_startTransition: true,
-      v7_relativeSplatPath: true,
-      v7_throwAbortReason: true,
-    },
-  });
-};
-
 // Main App component
 function App() {
-  const [router] = React.useState(createAppRouter);
-
   React.useEffect(() => {
     const cleanup = registerErrorHandlers();
     return cleanup;
   }, []);
 
   return (
-    <ErrorBoundary
-      onError={handleGlobalError}
-      fallback={ErrorFallback}
-    >
-      <Web3Provider>
-        <RouterProvider 
-          router={router}
-          fallbackElement={<div className="flex items-center justify-center min-h-screen">Loading...</div>}
-        />
-      </Web3Provider>
-    </ErrorBoundary>
+    <Web3Provider>
+      <RouterProvider 
+        router={router}
+        fallbackElement={<div className="flex items-center justify-center min-h-screen">Loading...</div>}
+      />
+    </Web3Provider>
   );
 }
 

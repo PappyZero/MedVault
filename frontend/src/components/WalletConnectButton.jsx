@@ -13,10 +13,9 @@ const WalletConnectButton = () => {
     error: web3Error 
   } = useWeb3();
   
-  const [isHovered, setIsHovered] = useState(false);
   const [localError, setLocalError] = useState(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [showDisconnect, setShowDisconnect] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -41,7 +40,7 @@ const WalletConnectButton = () => {
   const handleDisconnect = () => {
     try {
       disconnectWallet();
-      setShowTooltip(false);
+      setShowDisconnect(false);
     } catch (error) {
       console.error('Disconnection error:', error);
       setLocalError('Failed to disconnect wallet');
@@ -60,63 +59,61 @@ const WalletConnectButton = () => {
   return (
     <div className="relative">
       {isConnected ? (
-        <div 
-          className="relative group"
-          onMouseEnter={() => {
-            setIsHovered(true);
-            setShowTooltip(true);
-          }}
-          onMouseLeave={() => {
-            setIsHovered(false);
-            setShowTooltip(false);
-          }}
-        >
-          <Tooltip
-            content={
-              <div className="p-2 text-xs">
-                <div className="font-medium">Account Details</div>
-                <div className="mt-1 text-gray-200">Address: {account}</div>
-                <div className="mt-1">
-                  Network: {isBlockDAGNetwork ? 'BlockDAG' : 'Unsupported'}
-                </div>
-                {isWrongNetwork && (
-                  <div className="mt-1 text-yellow-400">
-                    Please switch to BlockDAG network
+        <div className="relative inline-block">
+          <div 
+            className="relative"
+            onMouseEnter={() => setShowDisconnect(true)}
+            onMouseLeave={() => setShowDisconnect(false)}
+          >
+            <Tooltip
+              content={
+                <div className="p-2 text-xs">
+                  <div className="font-medium">Account Details</div>
+                  <div className="mt-1 text-gray-200">Address: {account}</div>
+                  <div className="mt-1">
+                    Network: {isBlockDAGNetwork ? 'BlockDAG' : 'Unsupported'}
                   </div>
+                  {isWrongNetwork && (
+                    <div className="mt-1 text-yellow-400">
+                      Please switch to BlockDAG network
+                    </div>
+                  )}
+                </div>
+              }
+              position="bottom"
+              showArrow={true}
+              delay={100}
+              tooltipClassName="bg-gray-800 text-white"
+            >
+              <div 
+                className={`inline-flex items-center space-x-2 px-4 py-2 rounded-full transition-colors cursor-pointer ${
+                  isWrongNetwork 
+                    ? 'bg-yellow-100 text-yellow-800' 
+                    : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                }`}
+              >
+                {isWrongNetwork ? (
+                  <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+                ) : (
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
                 )}
+                <span className="font-medium">
+                  {isWrongNetwork ? 'Wrong Network' : formatAddress(account)}
+                </span>
               </div>
-            }
-            position="bottom"
-            showArrow={true}
-            delay={100}
-            tooltipClassName="bg-gray-800 text-white"
-          >
-            <div className={`flex items-center space-x-2 px-4 py-2 rounded-full transition-colors cursor-pointer ${
-              isWrongNetwork 
-                ? 'bg-yellow-100 text-yellow-800' 
-                : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
-            }`}>
-              {isWrongNetwork ? (
-                <span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-              )}
-              <span className="font-medium">
-                {isWrongNetwork ? 'Wrong Network' : formatAddress(account)}
-              </span>
-            </div>
-          </Tooltip>
+            </Tooltip>
+          </div>
           
-          {/* Disconnect button appears on hover */}
-          <button
-            onClick={handleDisconnect}
-            className={`absolute right-0 top-full mt-1 w-full bg-white shadow-lg rounded-md py-1 px-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200 ${
-              isHovered ? 'opacity-100 visible' : 'opacity-0 invisible'
-            }`}
-            aria-label="Disconnect wallet"
-          >
-            Disconnect
-          </button>
+          {/* Disconnect button as a sibling, not a child */}
+          {showDisconnect && (
+            <button
+              onClick={handleDisconnect}
+              className="absolute right-0 top-full mt-1 z-10 bg-white shadow-lg rounded-md py-1 px-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200"
+              aria-label="Disconnect wallet"
+            >
+              Disconnect
+            </button>
+          )}
         </div>
       ) : (
         <button
@@ -130,13 +127,13 @@ const WalletConnectButton = () => {
           aria-label={isConnecting ? 'Connecting to wallet' : 'Connect wallet'}
         >
           {isConnecting ? (
-            <div className="flex items-center space-x-2">
+            <span className="flex items-center space-x-2">
               <div 
                 className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" 
                 aria-hidden="true"
               />
               <span>Connecting...</span>
-            </div>
+            </span>
           ) : (
             'Connect Wallet'
           )}

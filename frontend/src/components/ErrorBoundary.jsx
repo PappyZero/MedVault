@@ -1,25 +1,14 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 
-/**
- * ErrorBoundary component that catches JavaScript errors in its child component tree,
- * logs those errors, and displays a fallback UI.
- */
 class ErrorBoundary extends Component {
   static propTypes = {
-    /** The child components to be wrapped by this error boundary */
     children: PropTypes.node.isRequired,
-    /** Optional fallback UI to render when an error occurs */
     fallback: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
-    /** Callback function called when an error is caught */
     onError: PropTypes.func,
-    /** Value that, when changed, will reset the error boundary */
     resetOnChange: PropTypes.any,
-    /** Whether to show the reset button */
     showReset: PropTypes.bool,
-    /** Additional CSS classes for the error boundary container */
     className: PropTypes.string,
-    /** Additional CSS classes for the error content */
     errorClassName: PropTypes.string,
   };
 
@@ -46,25 +35,21 @@ class ErrorBoundary extends Component {
     return { 
       hasError: true, 
       error,
-      errorId: `err-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` 
+      errorInfo: { componentStack: error.stack },
+      errorId: `err-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`  
     };
   }
 
   componentDidCatch(error, errorInfo) {
-    // Update state with error info
     this.setState({ errorInfo });
-    
-    // Log error to an error tracking service
     this.logErrorToService(error, errorInfo);
     
-    // Call custom error handler if provided
     if (this.props.onError) {
       this.props.onError(error, errorInfo, this.state.errorId);
     }
   }
 
   componentDidUpdate(prevProps) {
-    // Reset error boundary when resetOnChange changes
     if (
       this.props.resetOnChange !== prevProps.resetOnChange &&
       this.state.hasError
@@ -76,10 +61,8 @@ class ErrorBoundary extends Component {
   logErrorToService = (error, errorInfo) => {
     const { errorId } = this.state;
     
-    // In production, log to an error tracking service
     if (process.env.NODE_ENV === 'production') {
       try {
-        // Example: Sentry.captureException(error, { extra: { errorInfo, errorId } });
         console.error('ErrorBoundary caught an error:', {
           error: {
             message: error.message,
@@ -96,7 +79,6 @@ class ErrorBoundary extends Component {
         console.error('Error logging to service:', loggingError);
       }
     } else {
-      // In development, log to console with full details
       console.group('ErrorBoundary');
       console.error('Error:', error);
       console.error('Error Info:', errorInfo);
@@ -117,7 +99,6 @@ class ErrorBoundary extends Component {
     const { error, errorId, errorInfo } = this.state;
     const { fallback, errorClassName, showReset } = this.props;
 
-    // Use custom fallback if provided
     if (fallback) {
       return typeof fallback === 'function'
         ? fallback({ 
@@ -129,7 +110,6 @@ class ErrorBoundary extends Component {
         : fallback;
     }
 
-    // Default error UI
     return (
       <div 
         className={`bg-red-50 border-l-4 border-red-400 p-4 ${errorClassName}`}
@@ -161,7 +141,7 @@ class ErrorBoundary extends Component {
             </h3>
             <div className="mt-2 text-sm text-red-700">
               <p>{error?.message || 'An unexpected error occurred'}</p>
-              {(process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') && (
+              {(process.env.NODE_ENV !== 'production') && (
                 <details className="mt-2">
                   <summary className="text-xs text-red-500 cursor-pointer hover:underline">
                     Show error details
@@ -207,7 +187,8 @@ class ErrorBoundary extends Component {
       return this.renderErrorContent();
     }
 
-    return this.props.children;
+    // Ensure children is always rendered
+    return this.props.children || null;
   }
 }
 
