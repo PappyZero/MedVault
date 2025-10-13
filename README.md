@@ -86,7 +86,11 @@ cp .env.example .env
 ```
 
 ## Server Setup
-Open a new terminal
+Open a new terminal and run
+```
+sudo npm install -g pnpm@latest-10
+```
+
 #### Step 1:
 ```bash
 pnpm i
