@@ -87,17 +87,17 @@ cp .env.example .env
 
 ## Server Setup
 
-## Step 1:
+#### Step 1:
 ```bash
 pnpm i
 ```
-## Step 2: Run the server.
+#### Step 2: Run the server.
 ```bash
 pnpm run dev
 ```
-## Step 3: make sure it's working properly. Open `http://localhost:8080` with your browser, you should see this message `Hello There from MedVault :)!`
+#### Step 3: make sure it's working properly. Open `http://localhost:8080` with your browser, you should see this message `Hello There from MedVault :)!`
 
-## Step 4: Deploy to your cloudflare dashboard.
+#### Step 4: Deploy to your cloudflare dashboard.
 ```bash
 pnpm run Deploy
 ```
