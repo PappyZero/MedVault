@@ -152,8 +152,14 @@ export const CONTRACT_ADDRESS = "0x..."; // Your deployed address
 
 ## Running the Frontend
 
-```bash
+Run this inside your frontend folder:
+```
 cd frontend
+npm install -D tailwindcss postcss autoprefixer
+npx tailwindcss init -p
+```
+
+```bash
 npm run dev
 ```
 
