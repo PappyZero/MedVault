@@ -86,26 +86,27 @@ cp .env.example .env
 ```
 
 ## Server Setup
-Open a new terminal and run
+#### Step 1: Open a new terminal and run
 ```
 sudo npm install -g pnpm@latest-10
 ```
-then, cd into the folder "fileit-server"
+
+#### Step 2:  cd into the folder "fileit-server"
 ```
 cd fileit-server
 ```
 
-#### Step 1:
+#### Step 3:
 ```bash
 pnpm i
 ```
-#### Step 2: Run the server.
+#### Step 4: Run the server.
 ```bash
 pnpm run dev
 ```
-#### Step 3: make sure it's working properly. Open `http://localhost:8080` with your browser, you should see this message `Hello There from MedVault :)!`
+#### Step 5: make sure it's working properly. Open `http://localhost:8080` with your browser, you should see this message `Hello There from MedVault :)!`
 
-#### Step 4: Deploy to your cloudflare dashboard.
+#### Step 6: Deploy to your cloudflare dashboard.
 ```bash
 pnpm run Deploy
 ```
