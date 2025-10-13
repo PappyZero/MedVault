@@ -38,9 +38,11 @@ function Paramedic({ account, signer, provider }) {
 
     try {
       const contract = getContract(signer);
+      console.log("Contract: ",contract);
 
       // 1. Check if patient has a record
       const hasRecord = await contract.hasRecord(patientAddress);
+      console.log("Has Record: ",hasRecord);
       if (!hasRecord) {
         setMessage({ type: 'error', text: 'Patient has no medical record on file' });
         setLoading(false);
@@ -49,7 +51,8 @@ function Paramedic({ account, signer, provider }) {
 
       // 2. Attempt to access record (this emits AccessAttempt event)
       setMessage({ type: 'info', text: 'Requesting record access...' });
-      const cid = await contract.getRecord(patientAddress);
+      const cid = await contract.getRecordCID(patientAddress);
+      console.log("CID: ",cid);
 
       // 3. Get wrapped AES key
       setMessage({ type: 'info', text: 'Retrieving encryption key...' });

@@ -18,10 +18,10 @@ function GrantModal({ account, signer, aesKey, onClose, onSuccess }) {
       return;
     }
 
-    if (granteeAddress.toLowerCase() === account.toLowerCase()) {
-      setMessage({ type: 'error', text: 'Cannot grant access to yourself' });
-      return;
-    }
+    // if (granteeAddress.toLowerCase() === account.toLowerCase()) {
+    //   setMessage({ type: 'error', text: 'Cannot grant access to yourself' });
+    //   return;
+    // }
 
     setGranting(true);
     setMessage({ type: 'info', text: 'Wrapping encryption key...' });

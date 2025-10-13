@@ -1,67 +1,43 @@
+import { pinata } from './pinata';
+
 /**
- * IPFS Upload Utilities using Pinata
+ * IPFS Upload Utilities using Pinata SDK v2
  *
  * Handles uploading encrypted medical records to IPFS via Pinata API
  */
 
-const PINATA_API_KEY = import.meta.env.VITE_PINATA_API_KEY;
-const PINATA_SECRET_API_KEY = import.meta.env.VITE_PINATA_SECRET_API_KEY;
-const PINATA_API_URL = 'https://api.pinata.cloud';
-
 /**
- * Upload a blob to IPFS via Pinata
+ * Upload a blob to IPFS via Pinata SDK v2
  * @param {Blob} blob - File blob to upload
  * @param {string} filename - Name for the file
  * @param {object} metadata - Optional metadata to attach
  * @returns {Promise<{cid: string, url: string}>} IPFS CID and gateway URL
  */
 export async function uploadToIPFS(blob, filename, metadata = {}) {
-  if (!PINATA_API_KEY || !PINATA_SECRET_API_KEY) {
-    throw new Error('Pinata API credentials not configured. Please set VITE_PINATA_API_KEY and VITE_PINATA_SECRET_API_KEY in .env file.');
-  }
-
-  const formData = new FormData();
-  formData.append('file', blob, filename);
-
-  // Add metadata
-  const pinataMetadata = {
-    name: filename,
-    keyvalues: {
-      uploadedAt: new Date().toISOString(),
-      encrypted: 'true',
-      ...metadata
-    }
-  };
-  formData.append('pinataMetadata', JSON.stringify(pinataMetadata));
-
-  // Add pinning options
-  const pinataOptions = {
-    cidVersion: 1
-  };
-  formData.append('pinataOptions', JSON.stringify(pinataOptions));
-
+  const urlResponse = await fetch(`${import.meta.env.VITE_SERVER_URL}/presigned_url`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const { url:presignedUrl } = await urlResponse.json();
   try {
-    const response = await fetch(`${PINATA_API_URL}/pinning/pinFileToIPFS`, {
-      method: 'POST',
-      headers: {
-        'pinata_api_key': PINATA_API_KEY,
-        'pinata_secret_api_key': PINATA_SECRET_API_KEY
-      },
-      body: formData
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to upload to IPFS');
-    }
-
-    const result = await response.json();
+    const result = await pinata.upload.public.file(blob, {
+      metadata: {
+        name: filename,
+        keyvalues: {
+          uploadedAt: new Date().toISOString(),
+          encrypted: 'true',
+          ...metadata
+        }
+      }
+    }).url(presignedUrl);
 
     return {
-      cid: result.IpfsHash,
-      url: `https://gateway.pinata.cloud/ipfs/${result.IpfsHash}`,
-      size: result.PinSize,
-      timestamp: result.Timestamp
+      cid: result.cid,
+      url: `https://${pinata.config.pinataGateway}/ipfs/${result.cid}`,
+      size: result.size,
+      timestamp: result.created_at
     };
   } catch (error) {
     console.error('IPFS upload error:', error);
@@ -75,41 +51,90 @@ export async function uploadToIPFS(blob, filename, metadata = {}) {
  * @returns {Promise<Blob>} File blob
  */
 export async function fetchFromIPFS(cid) {
-  const url = `https://gateway.pinata.cloud/ipfs/${cid}`;
-
   try {
-    const response = await fetch(url);
+    // Use a CORS-enabled IPFS gateway
+    const url = `https://ipfs.io/ipfs/${cid}`;
+
+    console.log('Fetching from IPFS:', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Accept': 'application/octet-stream',
+      }
+    });
 
     if (!response.ok) {
+      console.error('IPFS fetch failed:', response.status, response.statusText);
+
+      // If rate limited or CORS blocked, try alternative gateway
+      if (response.status === 429 || response.status === 0) {
+        console.log('Trying alternative gateway...');
+        return await fetchFromIPFSAlternative(cid);
+      }
+
       throw new Error(`Failed to fetch from IPFS: ${response.statusText}`);
     }
 
-    return await response.blob();
+    // Check if response is actually the file content (not HTML)
+    const contentType = response.headers.get('content-type');
+    console.log('Response content-type:', contentType);
+
+    if (contentType && contentType.includes('text/html')) {
+      throw new Error('Received HTML response instead of file content. File may not exist or gateway may be having issues.');
+    }
+
+    const blob = await response.blob();
+    console.log('Blob size:', blob.size, 'type:', blob.type);
+
+    return blob;
   } catch (error) {
     console.error('IPFS fetch error:', error);
     throw new Error(`Failed to fetch from IPFS: ${error.message}`);
   }
 }
 
-/**
- * Check Pinata connection and API key validity
- * @returns {Promise<boolean>} True if connection is valid
- */
-export async function testPinataConnection() {
-  if (!PINATA_API_KEY || !PINATA_SECRET_API_KEY) {
-    return false;
-  }
-
+async function fetchFromIPFSAlternative(cid) {
   try {
-    const response = await fetch(`${PINATA_API_URL}/data/testAuthentication`, {
+    // Try dweb.link as alternative gateway
+    const url = `https://dweb.link/ipfs/${cid}`;
+
+    console.log('Trying alternative gateway:', url);
+
+    const response = await fetch(url, {
       method: 'GET',
+      mode: 'cors',
       headers: {
-        'pinata_api_key': PINATA_API_KEY,
-        'pinata_secret_api_key': PINATA_SECRET_API_KEY
+        'Accept': 'application/octet-stream',
       }
     });
 
-    return response.ok;
+    if (!response.ok) {
+      throw new Error(`Alternative gateway failed: ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('text/html')) {
+      throw new Error('Alternative gateway also returned HTML');
+    }
+
+    return await response.blob();
+  } catch (error) {
+    console.error('Alternative gateway also failed:', error);
+    throw new Error(`All IPFS gateways failed: ${error.message}`);
+  }
+}
+
+/**
+ * Check Pinata connection and JWT validity
+ * @returns {Promise<boolean>} True if connection is valid
+ */
+export async function testPinataConnection() {
+  try {
+    // Test the connection by trying to list files (this requires valid authentication)
+    await pinata.files.list();
+    return true;
   } catch (error) {
     console.error('Pinata connection test failed:', error);
     return false;
