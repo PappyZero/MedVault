@@ -35,6 +35,10 @@ This is a proof-of-concept implementation. The cryptographic implementations (AE
 ### One-Command Setup
 
 ```bash
+forge init --force
+```
+
+```bash
 bash init_medvault.sh
 ```
 
