@@ -90,6 +90,10 @@ Open a new terminal and run
 ```
 sudo npm install -g pnpm@latest-10
 ```
+then, cd into the folder "fileit-server"
+```
+cd fileit-server
+```
 
 #### Step 1:
 ```bash
