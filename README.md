@@ -86,7 +86,7 @@ cp .env.example .env
 ```
 
 ## Server Setup
-
+Open a new terminal
 #### Step 1:
 ```bash
 pnpm i
