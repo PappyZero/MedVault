@@ -38,25 +38,19 @@ fi
 
 echo ""
 echo "Installing Foundry dependencies..."
+cd contracts-foundry
 forge install --no-commit foundry-rs/forge-std 2>/dev/null || echo "Forge dependencies already installed"
 echo -e "${GREEN}✓ Foundry dependencies ready${NC}"
 
 echo ""
 echo "Installing frontend dependencies..."
-cd frontend
+cd ../frontend
 npm install
 echo -e "${GREEN}✓ Frontend dependencies installed${NC}"
 cd ..
 
 echo ""
 echo "Setting up environment files..."
-if [ ! -f .env ]; then
-    cp .env.example .env
-    echo -e "${YELLOW}⚠ Created .env file - please configure with your private key${NC}"
-else
-    echo -e "${GREEN}✓ .env file exists${NC}"
-fi
-
 if [ ! -f frontend/.env ]; then
     cp frontend/.env.example frontend/.env
     echo -e "${YELLOW}⚠ Created frontend/.env file - please configure with Pinata credentials${NC}"
@@ -66,12 +60,13 @@ fi
 
 echo ""
 echo "Compiling smart contracts..."
+cd contracts-foundry
 forge build
 echo -e "${GREEN}✓ Contracts compiled${NC}"
 
 echo ""
 echo "Running contract tests..."
-forge test
+forge test -vvvv
 echo -e "${GREEN}✓ Tests passed${NC}"
 
 echo ""
