@@ -35,10 +35,6 @@ This is a proof-of-concept implementation. The cryptographic implementations (AE
 ### One-Command Setup
 
 ```bash
-forge init --force
-```
-
-```bash
 bash init_medvault.sh
 ```
 
@@ -85,34 +81,6 @@ cp .env.example .env
 # Edit frontend/.env with your Pinata credentials
 ```
 
-## Server Setup
-#### Step 1: Open a new terminal and run
-```
-sudo npm install -g pnpm@latest-10
-```
-
-#### Step 2:  cd into the folder "fileit-server"
-```
-cd fileit-server
-```
-
-#### Step 3:
-```bash
-pnpm i
-```
-#### Step 4: Run the server.
-```bash
-pnpm run dev
-```
-#### Step 5: make sure it's working properly. Open `http://localhost:8080` with your browser, you should see this message `Hello There from MedVault :)!`
-
-#### Step 6: Deploy to your cloudflare dashboard.
-```bash
-pnpm run Deploy
-```
-Your browser should open a window, follow the steps.
-
-
 ## Smart Contract Deployment
 
 ### Option 1: Deploy with Foundry
@@ -152,14 +120,8 @@ export const CONTRACT_ADDRESS = "0x..."; // Your deployed address
 
 ## Running the Frontend
 
-Run this inside your frontend folder:
-```
-cd frontend
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-```
-
 ```bash
+cd frontend
 npm run dev
 ```
 
